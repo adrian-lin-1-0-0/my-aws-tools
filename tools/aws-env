@@ -1,0 +1,66 @@
+#!/bin/bash
+
+show_help() {
+    echo "Usage: $0 [options]"
+    echo "Options:"
+    echo "  -h, --help      Display this help message"
+    echo "  -l, --list      List all available environments"
+    echo "  -e, --env       Specify the environment number to use"
+    echo ""
+    echo "Example:"
+    echo "  $0 --env 1"
+}
+
+show_all_aws_profiles() {
+    echo "Available environments:"
+    echo ""
+    envs=$(aws configure list-profiles)
+    echo "$envs" | awk '{print NR, $0}'
+}
+
+use_aws_profile() {
+    if [ -z "$env_number" ]; then
+        echo "No environment specified/selected. Please use -e or --env to specify an environment. "
+        echo ""
+        show_all_aws_profiles
+        exit 1
+    fi
+
+    echo "following the command to set the environment :"
+    echo ""
+
+
+    env=$(aws configure list-profiles | sed -n "$env_number"p)
+    echo "export AWS_PROFILE=$env"
+}
+
+if [ -z "$1" ]; then
+    show_help
+    exit 1
+fi
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        -l|--list)
+            show_all_aws_profiles
+            exit 0
+            ;;
+        -e|--env)
+            shift
+            env_number=$1
+            use_aws_profile $env_number
+            ;;
+        *)
+            echo "Unknown option: $1"
+            show_help
+            exit 1
+            ;;
+    esac
+    shift
+done
+
+
