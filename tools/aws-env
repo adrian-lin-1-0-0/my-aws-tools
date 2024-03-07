@@ -26,12 +26,15 @@ use_aws_profile() {
         exit 1
     fi
 
-    echo "following the command to set the environment :"
-    echo ""
-
-
     env=$(aws configure list-profiles | sed -n "$env_number"p)
-    echo "export AWS_PROFILE=$env"
+    export AWS_PROFILE=$env
+    aws configure list
+    if command -v zsh &> /dev/null; then
+        exec zsh 
+        aws configure list
+    else
+        exec bash
+    fi
 }
 
 if [ -z "$1" ]; then
